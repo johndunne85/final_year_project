@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-names_data = pd.read_csv('data.csv')
+names_data = pd.read_csv('turn.csv')
 
 names_data.head()
 
@@ -19,9 +19,10 @@ names_data['card2'] = le.fit_transform(names_data['card2'])
 names_data['card3'] = le.fit_transform(names_data['card3'])
 names_data['card4'] = le.fit_transform(names_data['card4'])
 names_data['card5'] = le.fit_transform(names_data['card5'])
+names_data['card6'] = le.fit_transform(names_data['card6'])
 names_data.head()
 
-features = ['card1','card2','card3','card4','card5']
+features = ['card1','card2','card3','card4','card5','card6']
 
 poker_features = names_data[features]
 poker_features.head()
@@ -46,7 +47,7 @@ Ytest_ = torch.from_numpy(y_test.values).view(1,-1)[0]
 
 Ytrain_.shape
 
-input_size = 5
+input_size = 6
 output_size = 2
 hidden_size = 32
 hidden_size2 = 64
@@ -98,14 +99,14 @@ epochs = 1501
 #     if epoch % 100 == 0:
 #         print('epoch - %d (%d%%) train loss - %.2f test loss - %.2f accuracy - %.4f'\
 #              % (epoch, epoch/150 * 10, loss.data.item(), loss_test.data.item(), accuracy))
+#
+# torch.save(model.state_dict(),'checkpoint_turn.pth')
 
-torch.save(model.state_dict(),'checkpoint.pth')
+state_dict_turn = torch.load('checkpoint_turn.pth')
 
-state_dict = torch.load('checkpoint.pth')
+model.load_state_dict(state_dict_turn)
 
-model.load_state_dict(state_dict)
-
-def test_cards(card):
+def test_cards_turn(card):
     with torch.no_grad():
         logits = model.forward(card)
 
