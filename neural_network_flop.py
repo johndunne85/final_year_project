@@ -74,33 +74,33 @@ optimizer = optim.Adam(model.parameters())
 
 loss_fn = nn.NLLLoss()
 
-# epoch_data = []
-# epochs = 1501
-#
-# for epoch in range(1, epochs):
-#
-#     optimizer.zero_grad()
-#     Ypred = model(Xtrain_)
-#
-#     loss = loss_fn(Ypred, Ytrain_)
-#     loss.backward()
-#
-#     optimizer.step()
-#
-#     Ypred_test = model(Xtest_)
-#     loss_test = loss_fn(Ypred_test, Ytest_)
-#
-#     _,pred = Ypred_test.data.max(1)
-#
-#     accuracy = pred.eq(Ytest_.data).sum().item() / y_test.values.size
-#     epoch_data.append([epoch, loss.data.item(), loss_test.data.item(), accuracy])
-#
-#     if epoch % 100 == 0:
-#         print('epoch - %d (%d%%) train loss - %.2f test loss - %.2f accuracy - %.4f'\
-#              % (epoch, epoch/150 * 10, loss.data.item(), loss_test.data.item(), accuracy))
-#
-# torch.save(model.state_dict(),'checkpoint.pth')
-#
+epoch_data = []
+epochs = 1501
+
+for epoch in range(1, epochs):
+
+    optimizer.zero_grad()
+    Ypred = model(Xtrain_)
+
+    loss = loss_fn(Ypred, Ytrain_)
+    loss.backward()
+
+    optimizer.step()
+
+    Ypred_test = model(Xtest_)
+    loss_test = loss_fn(Ypred_test, Ytest_)
+
+    _,pred = Ypred_test.data.max(1)
+
+    accuracy = pred.eq(Ytest_.data).sum().item() / y_test.values.size
+    epoch_data.append([epoch, loss.data.item(), loss_test.data.item(), accuracy])
+
+    if epoch % 100 == 0:
+        print('epoch - %d (%d%%) train loss - %.2f test loss - %.2f accuracy - %.4f'\
+             % (epoch, epoch/150 * 10, loss.data.item(), loss_test.data.item(), accuracy))
+
+torch.save(model.state_dict(),'checkpoint.pth')
+
 state_dict = torch.load('checkpoint.pth')
 
 model.load_state_dict(state_dict)
