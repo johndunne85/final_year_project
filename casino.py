@@ -43,8 +43,8 @@ button = 0
 stacks = [100, 100]
 button_names = ['player_1','player_2']
 pot = 0
-small_blind = 1
-big_blind = 2
+small_blind = 2
+big_blind = 4
 player_1_raise = False
 player_2_raise = False
 player_1_bet_history = []
@@ -54,7 +54,7 @@ player_2_bet_history = []
 def decision_at_flop_player_1(p3):
 
     x = torch.FloatTensor([[card_table[p3[0]],card_table[p3[1]],card_table[p3[2]],card_table[p3[3]],card_table[p3[4]],\
-    bet_table[player_2_bet_history[0]],bet_table[player_2_bet_history[1]] ]])
+    bet_table[player_2_bet_history[0]],bet_table[player_2_bet_history[1]] if len(player_2_bet_history) == 2 else 0 ]])
     ans_agg = test_cards_agg_flop(x)
     ans_tig = test_cards_tig_flop(x)
     print('--> agg flop {}'.format(ans_agg))
@@ -90,7 +90,7 @@ def decision_continue_of_opponent_at_flop(hand_score):
 
 def decision_at_turn_player_1(p4):
     x = torch.FloatTensor([[card_table[p4[0]],card_table[p4[1]],card_table[p4[2]],card_table[p4[3]],card_table[p4[4]],card_table[p4[5]],\
-    bet_table[player_2_bet_history[0]],bet_table[player_2_bet_history[1]],bet_table[player_2_bet_history[2]] ]])
+    bet_table[player_2_bet_history[0]],bet_table[player_2_bet_history[1]],bet_table[player_2_bet_history[2]] if len(player_2_bet_history) == 3 else 0]])
     ans_agg_turn = test_cards_agg_turn(x)
     ans_tig_turn = test_cards_tig_turn(x)
     # print('p1 turn {}'.format(ans))
@@ -132,7 +132,7 @@ def decision_continue_of_opponent_at_turn(hand_score):
 
 def decision_at_river_player_1(p5):
     x = torch.FloatTensor([[card_table[p5[0]],card_table[p5[1]],card_table[p5[2]],card_table[p5[3]],card_table[p5[4]],card_table[p5[5]],card_table[p5[6]],\
-    bet_table[player_1_bet_history[0]],bet_table[player_1_bet_history[1]],bet_table[player_1_bet_history[2]],bet_table[player_1_bet_history[3]]]])
+    bet_table[player_2_bet_history[0]],bet_table[player_2_bet_history[1]],bet_table[player_2_bet_history[2]],bet_table[player_2_bet_history[3]] if len(player_2_bet_history) == 4 else 0]])
     ans_agg_river = test_cards_agg_river(x)
     ans_tig_river = test_cards_tig_river(x)
     # print('p1 river {}'.format(ans))
@@ -142,11 +142,32 @@ def decision_at_river_player_1(p5):
     else:
         return 'c'
 
+def decision_continue_at_river_player_1(p5):
+    x = torch.FloatTensor([[card_table[p5[0]],card_table[p5[1]],card_table[p5[2]],card_table[p5[3]],card_table[p5[4]],card_table[p5[5]],card_table[p5[6]],\
+    bet_table[player_2_bet_history[0]],bet_table[player_2_bet_history[1]],bet_table[player_2_bet_history[2]],bet_table[player_2_bet_history[3]] ]])
+    ans_agg_river = test_cards_agg_river(x)
+    ans_tig_river = test_cards_tig_river(x)
+    # print('p1 river {}'.format(ans))
+
+    if ans_agg_river == 'raise':
+        return 'c'
+    else:
+        return 'c'
+
 def decision_of_opponent_at_river(hand_score):
 
     if hand_score > 0:
         # player_2_bet_history.append('r')
         return 'r'
+    else:
+        # player_2_bet_history.append('c')
+        return 'c'
+
+def decision_continue_of_opponent_at_river(hand_score):
+
+    if hand_score > 0:
+        # player_2_bet_history.append('r')
+        return 'c'
     else:
         # player_2_bet_history.append('c')
         return 'c'
@@ -223,7 +244,7 @@ def find_winner(my_cards):
         return (0, ['high_card',maxValue])
 
 bomb = 0
-while bomb < 10:
+while bomb < 200:
 
     random.seed()
     random.shuffle(POKER_BOX)
@@ -250,8 +271,9 @@ while bomb < 10:
 
     p1_card_val_1 = player_1[0][0]
     p1_card_val_2 = player_1[1][0]
+    print()
 
-
+    print('Button is Player 1') if button == 0 else print('Button is Player 2')
     print('player 1 two cards {}'.format(player_1))
     print('player 2 two cards {}'.format(player_2))
 
@@ -280,13 +302,13 @@ while bomb < 10:
             player_2_bet_history.append('r')
             print('player_2 raise')
             if player_1_pre_flop_raise:
+                pot += 6
+                stacks[1] -= 6
+            else:
                 pot += 4
                 stacks[1] -= 4
-            else:
-                pot += 2
-                stacks[1] -= 2
             player_2_pre_flop_raise = True
-            player_2_bet_history.append('c')
+
         elif player_2[0][-1] != player_2[1][-1] and player_2_two_card in pre_flop_fold and probability_num != 8:
             print('player_2 folds pre flop')
             continue
@@ -296,6 +318,16 @@ while bomb < 10:
                 stacks[1] -= 2
             print('player 2 checks')
             player_2_bet_history.append('c')
+
+        if player_2_pre_flop_raise:
+            player_1_bet_history.append('c')
+            if player_1_pre_flop_raise:
+                pot += 4
+                stacks[0] -= 4
+            else:
+                pot += 4
+                stacks[0] -= 4
+
 
     if button_names[button] == 'player_2':
         pot += 2 # small blind
@@ -318,15 +350,16 @@ while bomb < 10:
             player_2_bet_history.append('c')
 
         if player_1_two_card in pre_flop_odds:
+            player_1_bet_history.append('r')
             print('player_1 raise')
             if player_2_pre_flop_raise:
+                pot += 6
+                stacks[0] -= 6
+            else:
                 pot += 4
                 stacks[0] -= 4
-            else:
-                pot += 2
-                stacks[0] -= 2
             player_1_pre_flop_raise = True
-            player_1_bet_history.append('r')
+
         elif player_1[0][-1] != player_1[1][-1] and player_1_two_card in pre_flop_fold and probability_num != 8:
             print('player_1 folds pre flop')
             continue
@@ -337,6 +370,15 @@ while bomb < 10:
             print('player 1 checks')
             player_1_bet_history.append('c')
 
+        if player_1_pre_flop_raise:
+            player_2_bet_history.append('c')
+            if player_2_pre_flop_raise:
+                pot += 4
+                stacks[0] -= 4
+            else:
+                pot += 4
+                stacks[0] -= 4
+
       # ******  end of pre flop betting ******
 
 
@@ -344,9 +386,9 @@ while bomb < 10:
     # flop cards on table ***
     player_1_with_flop = player_1 + flop_cards
     player_2_with_flop = player_2 + flop_cards
-
-    print('---> p2 bet history {}'.format(player_2_bet_history))
     print('---> p1 bet history {}'.format(player_1_bet_history))
+    print('---> p2 bet history {}'.format(player_2_bet_history))
+
     # print(player_2_with_flop)
 
     cards =  player_1_with_flop
@@ -375,14 +417,12 @@ while bomb < 10:
 
         if decision_of_opponent_at_flop(opponent_hand_rank) == 'c':
             player_2_bet_history.append('c')
-            print('player_2 calls')
             if player_1_raise:
                 pot += 4
                 stacks[1] -= 4
 
         elif decision_of_opponent_at_flop(opponent_hand_rank) == 'r':
             player_2_bet_history.append('r')
-            print('player_2 raise at flop')
             if player_1_raise:
                 pot += 8
                 stacks[1] -= 8
@@ -498,11 +538,11 @@ while bomb < 10:
             player_2_raise = True
 
         if player_2_raise:
-            if decision_at_turn_player_1(player_1_cards_at_turn) == 'c':
+            if decision_continue_at_turn_player_1(player_1_cards_at_turn) == 'c':
                 player_1_bet_history.append('c')
                 pot += 4
                 stacks[0] -= 4
-            elif decision_at_turn_player_1(player_1_cards_at_turn) == 'f':
+            elif decision_continue_at_turn_player_1(player_1_cards_at_turn) == 'f':
                 print('player_1 folds')
                 stacks[1] += pot
                 print('player_2 wins ${}'.format(pot))
@@ -595,11 +635,11 @@ while bomb < 10:
             player_2_raise = True
 
         if player_2_raise:
-            if decision_at_river_player_1(player_1_cards_at_river) == 'c':
+            if decision_continue_at_river_player_1(player_1_cards_at_river) == 'c':
                 player_1_bet_history.append('c')
                 pot += 4
                 stacks[0] -= 4
-            elif decision_at_river_player_1(player_1_cards_at_river) == 'f':
+            elif decision_continue_at_river_player_1(player_1_cards_at_river) == 'f':
                 print('player_1 folds')
                 stacks[1] += pot
                 print('player_2 wins ${}'.format(pot))
@@ -636,11 +676,11 @@ while bomb < 10:
             player_1_raise = True
 
         if player_1_raise:
-            if decision_of_opponent_at_river(opponent_hand_rank) == 'c':
+            if decision_continue_of_opponent_at_river(opponent_hand_rank) == 'c':
                 player_2_bet_history.append('c')
                 pot += 4
                 stacks[1] -= 4
-            elif decision_of_opponent_at_river(opponent_hand_rank) == 'f':
+            elif decision_continue_of_opponent_at_river(opponent_hand_rank) == 'f':
                 print('player_2 folds')
                 stacks[0] += pot
                 print('player_1 wins ${}'.format(pot))
@@ -657,7 +697,7 @@ while bomb < 10:
     jhand7 = player_1_cards_at_river[6]
     jhand_flop = jhand1+','+jhand2+','+jhand3+','+jhand4+','+jhand5+','+jhand6+','+jhand7
 
-    opp_bit_history = ','.join(player_2_bet_history)
+    # opp_bit_history = ','.join(player_2_bet_history)
 
 
     p1_cards_for_game, p1 = find_winner(player_1_cards_at_river)
@@ -690,8 +730,7 @@ while bomb < 10:
 
     print('player 1 {}'.format(player_1_bet_history))
     print('player 2 {}'.format(player_2_bet_history))
-    print(opp_bit_history)
+
 
     bomb += 1
     button = (button + 1)%2
-    print('the button {}'.format(button))
