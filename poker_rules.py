@@ -10,8 +10,9 @@ ACTIONS = ['r', 'c', 'f']  # RAISE or CALL/CHECK or FOLD
 card_table = { '6C':0,'7C':4,'8C':8,'9C':12,'TC':32,'JC':20,'QC':28,'KC':24,'AC':16,\
                '6D':1,'7D':5,'8D':9,'9D':13,'TD':33,'JD':21,'QD':29,'KD':25,'AD':17,\
                '6S':3,'7S':7,'8S':11,'9S':15,'TS':35,'JS':23,'QS':31,'KS':27,'AS':19,\
-               '6H':2,'7H':6,'8H':10,'9H':14,'TH':34,'JH':22,'QH':30,'KH':26,'AH':18  
+               '6H':2,'7H':6,'8H':10,'9H':14,'TH':34,'JH':22,'QH':30,'KH':26,'AH':18
                }
+bet_table = { 'r': 1, 'c': 0}
 
 class Card:
     def __init__(self, card):

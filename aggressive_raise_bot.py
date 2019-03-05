@@ -52,10 +52,6 @@ player_1_bet_history = []
 player_2_bet_history = []
 
 
-#while(stacks[0] > 0 and stacks[1] > 0):
-
-
-
 def decision_at_flop_player_1(p3):
 
     x = torch.FloatTensor([[card_table[p3[0]],card_table[p3[1]],card_table[p3[2]],card_table[p3[3]],card_table[p3[4]]]])

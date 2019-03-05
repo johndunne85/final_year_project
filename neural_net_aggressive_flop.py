@@ -79,42 +79,42 @@ loss_fn = nn.NLLLoss()
 epoch_data = []
 epochs = 1501
 
-for epoch in range(1, epochs):
-
-    optimizer.zero_grad()
-    Ypred = model(Xtrain_)
-
-    loss = loss_fn(Ypred, Ytrain_)
-    loss.backward()
-
-    optimizer.step()
-
-    Ypred_test = model(Xtest_)
-    loss_test = loss_fn(Ypred_test, Ytest_)
-
-    _,pred = Ypred_test.data.max(1)
-
-    accuracy = pred.eq(Ytest_.data).sum().item() / y_test.values.size
-    epoch_data.append([epoch, loss.data.item(), loss_test.data.item(), accuracy])
-
-    if epoch % 100 == 0:
-        print('epoch - %d (%d%%) train loss - %.2f test loss - %.2f accuracy - %.4f'\
-             % (epoch, epoch/150 * 10, loss.data.item(), loss_test.data.item(), accuracy))
-
-torch.save(model.state_dict(),'checkpoint_agg_flop.pth')
-
-# state_dict = torch.load('checkpoint_agg_flop.pth')
+# for epoch in range(1, epochs):
 #
-# model.load_state_dict(state_dict)
+#     optimizer.zero_grad()
+#     Ypred = model(Xtrain_)
 #
-# def test_cards(card):
-#     with torch.no_grad():
-#         logits = model.forward(card)
+#     loss = loss_fn(Ypred, Ytrain_)
+#     loss.backward()
 #
-#     ps = F.softmax(logits,dim=1)
+#     optimizer.step()
 #
+#     Ypred_test = model(Xtest_)
+#     loss_test = loss_fn(Ypred_test, Ytest_)
 #
-#     if ps[0][0] > ps[0][1]:
-#         return('call')
-#     else:
-#         return('raise')
+#     _,pred = Ypred_test.data.max(1)
+#
+#     accuracy = pred.eq(Ytest_.data).sum().item() / y_test.values.size
+#     epoch_data.append([epoch, loss.data.item(), loss_test.data.item(), accuracy])
+#
+#     if epoch % 100 == 0:
+#         print('epoch - %d (%d%%) train loss - %.2f test loss - %.2f accuracy - %.4f'\
+#              % (epoch, epoch/150 * 10, loss.data.item(), loss_test.data.item(), accuracy))
+#
+# torch.save(model.state_dict(),'checkpoint_agg_flop.pth')
+
+state_dict_agg_flop = torch.load('checkpoint_agg_flop.pth')
+
+model.load_state_dict(state_dict_agg_flop)
+
+def test_cards_agg_flop(card):
+    with torch.no_grad():
+        logits = model.forward(card)
+
+    ps = F.softmax(logits,dim=1)
+
+
+    if ps[0][0] > ps[0][1]:
+        return('call')
+    else:
+        return('raise')
