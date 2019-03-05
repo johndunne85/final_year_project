@@ -99,7 +99,7 @@ epochs = 1501
 #         print('epoch - %d (%d%%) train loss - %.2f test loss - %.2f accuracy - %.4f'\
 #              % (epoch, epoch/150 * 10, loss.data.item(), loss_test.data.item(), accuracy))
 
-torch.save(model.state_dict(),'checkpoint.pth')
+# torch.save(model.state_dict(),'checkpoint.pth')
 
 state_dict = torch.load('checkpoint.pth')
 
@@ -112,7 +112,8 @@ def test_cards(card):
     ps = F.softmax(logits,dim=1)
 
 
+    
     if ps[0][0] > ps[0][1]:
-        return('loss')
+        return('raise')
     else:
-        return('win')
+        return('call')

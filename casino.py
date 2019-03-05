@@ -1,5 +1,5 @@
 import random
-from poker_rules import POKER_BOX, Hand, Card
+from poker_rules import POKER_BOX, Hand, Card, card_table
 import numpy as np
 import pandas as pd
 import itertools
@@ -11,17 +11,18 @@ import torch
 from neural_network_flop import Net, test_cards
 from neural_network_turn import Net, test_cards_turn
 from neural_network_river import Net, test_cards_river
-x = torch.FloatTensor([[32,14,3,10,31,11,23]])
 
-ans = test_cards_river(x)
-print(ans)
+# x = torch.FloatTensor([[32,14,3,10,31,11,23]])
+#
+# ans = test_cards_river(x)
+# print(ans)
 
 def determine_value(x):
     try:
         return int(x)
     except ValueError:
         return {
-            'J': 11, 'Q': 12, 'K': 13, 'A': 14
+            'T': 10, 'J': 11, 'Q': 12, 'K': 13, 'A': 14
         }.get(x)
 
 pre_flop_odds = {'AA':'r','AK':'r','AQ':'r','AJ':'r','KK':'r','KQ':'r','KJ':'r','QK':'r','JK':'r','QJ':'r'\
@@ -29,7 +30,7 @@ pre_flop_odds = {'AA':'r','AK':'r','AQ':'r','AJ':'r','KK':'r','KQ':'r','KJ':'r',
 
 pre_flop_fold = {'69':'f','96':'f','16':'f','61':'f','17':'f','71':'f'}
 
-RANKS = [str(i) for i in range(6, 11)] + ['J', 'Q', 'K', 'A']
+RANKS = [str(i) for i in range(6, 10)] + ['T','J', 'Q', 'K', 'A']
 SUITS = ['C', 'D', 'H', 'S']
 POKER_BOX = [r+s for r,s in itertools.product(RANKS, SUITS)]
 random.seed()
@@ -56,6 +57,7 @@ player_2_bet_history = []
 
 
 def decision_at_flop_player_1(p2_raise):
+
     if not p2_raise:
         return 'r'
     else:
@@ -314,18 +316,25 @@ while bomb:
 
     print(player_1_with_flop)
     # print(player_2_with_flop)
+    p3 = player_1_with_flop
+
+    x = torch.FloatTensor([[card_table[p3[0]],card_table[p3[1]],card_table[p3[2]],card_table[p3[3]],card_table[p3[4]]]])
+    ans = test_cards(x)
+    print(ans)
+
+
 
     cards =  player_1_with_flop
     # print(u"\u2665")
     # print(u"\u2663")
 
-    num = Hand(cards).get_score()
-    print('player 1 : score is {}'.format(num))
-
-    num2 = Hand(player_2_with_flop).get_score()
-    opponent_hand_rank = num2[0]
-    print('player 2 : score is {}'.format(num2))
-    print(opponent_hand_rank)
+    # num = Hand(cards).get_score()
+    # print('player 1 : score is {}'.format(num))
+    #
+    # num2 = Hand(player_2_with_flop).get_score()
+    # opponent_hand_rank = num2[0]
+    # print('player 2 : score is {}'.format(num2))
+    # print(opponent_hand_rank)
 #   ******************** here *********************
 
     if button_names[button] == 'player_1':

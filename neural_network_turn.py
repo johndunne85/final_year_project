@@ -114,6 +114,6 @@ def test_cards_turn(card):
 
 
     if ps[0][0] > ps[0][1]:
-        return('loss')
+        return('call')
     else:
-        return('win')
+        return('raise')

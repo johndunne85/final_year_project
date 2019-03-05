@@ -60,35 +60,62 @@ def decision_at_flop_player_1(p3):
 
     x = torch.FloatTensor([[card_table[p3[0]],card_table[p3[1]],card_table[p3[2]],card_table[p3[3]],card_table[p3[4]]]])
     ans = test_cards(x)
-    print('flop {}'.format(ans))
+    # print('p1 flop {}'.format(ans))
 
     if ans == 'raise':
-        player_1_bet_history.append('r')
         return 'r'
     else:
-        player_1_bet_history.append('c')
+        return 'c'
+
+def decision_continue_at_flop_player_1(p3):
+    x = torch.FloatTensor([[card_table[p3[0]],card_table[p3[1]],card_table[p3[2]],card_table[p3[3]],card_table[p3[4]]]])
+    ans = test_cards(x)
+    if ans == 'raise':
+        return 'c'
+    else:
+        return 'c'
+
+def decision_continue_of_opponent_at_flop(hand_score):
+    if hand_score > 0:
+        return 'c'
+    else:
         return 'c'
 
 def decision_of_opponent_at_flop(hand_score):
-
     if hand_score > 0:
-        player_2_bet_history.append('r')
         return 'r'
     else:
-        player_2_bet_history.append('c')
         return 'c'
+
+def decision_continue_at_turn_player_1(p4):
+    x = torch.FloatTensor([[card_table[p4[0]],card_table[p4[1]],card_table[p4[2]],card_table[p4[3]],card_table[p4[4]],card_table[p4[5]] ]])
+    ans = test_cards_turn(x)
+
+    if ans == 'raise':
+        # print('p1 checks at turn ')
+        return 'c'
+    else:
+        return 'c'
+
 
 def decision_at_turn_player_1(p4):
 
     x = torch.FloatTensor([[card_table[p4[0]],card_table[p4[1]],card_table[p4[2]],card_table[p4[3]],card_table[p4[4]],card_table[p4[5]] ]])
     ans = test_cards_turn(x)
-    print('turn {}'.format(ans))
+    # print('p1 turn {}'.format(ans))
 
     if ans == 'raise':
-        player_1_bet_history.append('r')
         return 'r'
     else:
-        player_1_bet_history.append('c')
+        return 'c'
+
+def decision_continue_of_opponent_at_turn(hand_score):
+    if hand_score > 0:
+        # player_2_bet_history.append('r')
+        # print('p2 checks at turn')
+        return 'c'
+    else:
+        # player_2_bet_history.append('c')
         return 'c'
 
 def decision_of_opponent_at_turn(hand_score):
@@ -104,13 +131,11 @@ def decision_at_river_player_1(p5):
 
     x = torch.FloatTensor([[card_table[p5[0]],card_table[p5[1]],card_table[p5[2]],card_table[p5[3]],card_table[p5[4]],card_table[p5[5]],card_table[p5[6]] ]])
     ans = test_cards_river(x)
-    print('river {}'.format(ans))
+    # print('p1 river {}'.format(ans))
 
     if ans == 'raise':
-        player_1_bet_history.append('r')
         return 'r'
     else:
-        player_1_bet_history.append('c')
         return 'c'
 
 def decision_of_opponent_at_river(hand_score):
@@ -242,7 +267,7 @@ while bomb < 2:
             player_1_bet_history.append('r')
         elif player_1[0][-1] != player_1[1][-1] and player_1_two_card in pre_flop_fold and probability_num != 8:
             # print('player_1 folds pre flop')
-            break
+            continue
         else:
             pot += 2
             stacks[0] -= 2
@@ -261,7 +286,7 @@ while bomb < 2:
             player_2_bet_history.append('r')
         elif player_2[0][-1] != player_2[1][-1] and player_2_two_card in pre_flop_fold and probability_num != 8:
             # print('player_2 folds pre flop')
-            break
+            continue
         else:
             if player_1_pre_flop_raise:
                 pot += 2
@@ -282,7 +307,7 @@ while bomb < 2:
             player_2_bet_history.append('r')
         elif player_2[0][-1] != player_2[1][-1] and player_2_two_card in pre_flop_fold and probability_num != 8:
             # print('player_2 folds pre flop')
-            break
+            continue
         else:
             pot += 2
             stacks[1] -= 2
@@ -301,7 +326,7 @@ while bomb < 2:
             player_1_bet_history.append('r')
         elif player_1[0][-1] != player_1[1][-1] and player_1_two_card in pre_flop_fold and probability_num != 8:
             # print('player_1 folds pre flop')
-            break
+            continue
         else:
             if player_2_pre_flop_raise:
                 pot += 2
@@ -330,67 +355,71 @@ while bomb < 2:
 
     # num2 = Hand(player_2_with_flop).get_score()
     num2 = find_winner(player_2_with_flop)
-    print(num2)
+    # print(num2)
     opponent_hand_rank = num2[0]
-    print(opponent_hand_rank)
+    # print(opponent_hand_rank)
     # print('player 2 : score is {}'.format(num2))
     # print(opponent_hand_rank)
 #   ******************** here *********************
 
     if button_names[button] == 'player_1':
         if decision_at_flop_player_1(player_1_with_flop) == 'r':
-            # print('player_1 raise at flop')
+            player_1_bet_history.append('r')
             pot += 4
             stacks[0] -= 4
             player_1_raise = True
         elif decision_at_flop_player_1(player_1_with_flop) == 'c':
-            # print('player_1 calls')
+            player_1_bet_history.append('c')
             player_1_raise = False
 
         if decision_of_opponent_at_flop(opponent_hand_rank) == 'c':
-            # print('player_2 calls')
+            player_2_bet_history.append('c')
             if player_1_raise:
                 pot += 4
                 stacks[1] -= 4
 
         elif decision_of_opponent_at_flop(opponent_hand_rank) == 'r':
             # print('player_2 raise at flop')
+            player_2_bet_history.append('r')
             if player_1_raise:
                 pot += 8
                 stacks[1] -= 8
             else:
                 pot += 4
                 stacks[1] -= 4
-                player_2_raise = True
+
+            player_2_raise = True
 
         if player_2_raise:
-            if decision_at_flop_player_1(player_1_with_flop) == 'c':
+            if decision_continue_at_flop_player_1(player_1_with_flop) == 'c':
+                player_1_bet_history.append('c')
                 pot += 4
                 stacks[0] -= 4
 
-            elif decision_at_flop_player_1(player_1_with_flop) == 'f':
-                # print('player_1 folds')
+            elif decision_continue_at_flop_player_1(player_1_with_flop) == 'f':
+                player_1_bet_history.append('f')
                 stacks[1] += pot
                 # print('player_2 wins ${}'.format(pot))
-                break
+                # print('player_1 folds')
+                continue
 
     else:
         if decision_of_opponent_at_flop(opponent_hand_rank) == 'r':
-            # print('player_2 raise at flop')
+            player_2_bet_history.append('r')
             pot += 4
             stacks[1] -= 4
             player_2_raise = True
         elif decision_of_opponent_at_flop(opponent_hand_rank) == 'c':
-            # print('player_2 calls')
+            player_2_bet_history.append('c')
             player_2_raise = False
 
         if decision_at_flop_player_1(player_1_with_flop) == 'c':
-            # print('player_1 calls')
+            player_1_bet_history.append('c')
             if player_2_raise:
                 pot += 4
                 stacks[0] -= 4
         elif decision_at_flop_player_1(player_1_with_flop) == 'r':
-            # print('player_1 raise at flop')
+            player_1_bet_history.append('r')
             if player_2_raise:
                 pot += 8
                 stacks[0] -= 8
@@ -400,14 +429,16 @@ while bomb < 2:
             player_1_raise = True
 
         if player_1_raise:
-            if decision_of_opponent_at_flop(opponent_hand_rank) == 'c':
+            if decision_continue_of_opponent_at_flop(opponent_hand_rank) == 'c':
+                player_2_bet_history.append('c')
                 pot += 4
                 stacks[1] -= 4
-            elif decision_of_opponent_at_flop(opponent_hand_rank) == 'f':
-                # print('player_2 folds')
+            elif decision_continue_of_opponent_at_flop(opponent_hand_rank) == 'f':
+                player_2_bet_history.append('f')
                 stacks[0] += pot
                 # print('player_1 wins ${}'.format(pot))
-                break
+                # print('player_1 folds')
+                continue
 
      # Turn cards on table ***
     player_1_raise = False
@@ -447,11 +478,13 @@ while bomb < 2:
 
         if decision_of_opponent_at_turn(opponent_hand_rank) == 'c':
             # print('player_2 calls at turn')
+            player_2_bet_history.append('c')
             if player_1_raise:
                 pot += 4
                 stacks[1] -= 4
         elif decision_of_opponent_at_turn(opponent_hand_rank) == 'r':
             # print('player_2 raise at turn')
+            player_2_bet_history.append('r')
             if player_1_raise:
                 pot += 8
                 stacks[1] -= 8
@@ -461,23 +494,25 @@ while bomb < 2:
             player_2_raise = True
 
         if player_2_raise:
-            if decision_at_turn_player_1(player_1_cards_at_turn) == 'c':
+            if decision_continue_at_turn_player_1(player_1_cards_at_turn) == 'c':
                 pot += 4
                 stacks[0] -= 4
-            elif decision_at_turn_player_1(player_1_cards_at_turn) == 'f':
-                # print('player_1 folds')
+            elif decision_continue_at_turn_player_1(player_1_cards_at_turn) == 'f':
+
                 stacks[1] += pot
                 # print('player_2 wins ${}'.format(pot))
-                break
+                continue
 
     else:
         if decision_of_opponent_at_turn(opponent_hand_rank) == 'r':
             # print('player_2 raise at turn')
+            player_2_bet_history.append('r')
             pot += 4
             stacks[1] -= 4
             player_2_raise = True
         elif decision_of_opponent_at_turn(opponent_hand_rank) == 'c':
             # print('player_2 calls at turn')
+            player_2_bet_history.append('c')
             player_2_raise = False
 
         if decision_at_turn_player_1(player_1_cards_at_turn) == 'c':
@@ -493,14 +528,16 @@ while bomb < 2:
             player_1_raise = True
 
         if player_1_raise:
-            if decision_of_opponent_at_turn(opponent_hand_rank) == 'c':
+            if decision_continue_of_opponent_at_turn(opponent_hand_rank) == 'c':
+                player_2_bet_history.append('c')
                 pot += 4
                 stacks[1] -= 4
-            elif decision_of_opponent_at_turn(opponent_hand_rank) == 'f':
+            elif decision_continue_of_opponent_at_turn(opponent_hand_rank) == 'f':
                 # print('player_2 folds')
                 stacks[0] += pot
                 # print('player_1 wins ${}'.format(pot))
-                break
+
+                continue
 
     player_1_raise = False
     player_2_raise = False
@@ -531,11 +568,13 @@ while bomb < 2:
 
         if decision_of_opponent_at_river(opponent_hand_rank) == 'c':
             # print('player_2 calls at river')
+            player_2_bet_history.append('c')
             if player_1_raise:
                 pot += 4
                 stacks[1] -= 4
         elif decision_of_opponent_at_river(opponent_hand_rank) == 'r':
             # print('player_2 raise at river')
+            player_2_bet_history.append('r')
             if player_1_raise:
                 pot += 8
                 stacks[1] -= 8
@@ -552,16 +591,19 @@ while bomb < 2:
                 # print('player_1 folds')
                 stacks[1] += pot
                 # print('player_2 wins ${}'.format(pot))
-                break
+
+                continue
 
     else:
         if decision_of_opponent_at_river(opponent_hand_rank) == 'r':
             # print('player_2 raise at river')
+            player_2_bet_history.append('r')
             pot += 4
             stacks[1] -= 4
             player_2_raise = True
         elif decision_of_opponent_at_river(opponent_hand_rank) == 'c':
             # print('player_2 calls at river')
+            player_2_bet_history.append('c')
             player_2_raise = False
 
         if decision_at_river_player_1(player_1_cards_at_river) == 'c':
@@ -582,22 +624,26 @@ while bomb < 2:
 
         if player_1_raise:
             if decision_of_opponent_at_river(opponent_hand_rank) == 'c':
+                player_2_bet_history.append('c')
                 pot += 4
                 stacks[1] -= 4
             elif decision_of_opponent_at_river(opponent_hand_rank) == 'f':
                 # print('player_2 folds')
                 stacks[0] += pot
                 # print('player_1 wins ${}'.format(pot))
-                break
+
+                continue
 
     did_win = 'win'
     did_loss = 'loss'
-    jhand1 = player_1_with_flop[0]
-    jhand2 = player_1_with_flop[1]
-    jhand3 = player_1_with_flop[2]
-    jhand4 = player_1_with_flop[3]
-    jhand5 = player_1_with_flop[4]
-    jhand_flop = jhand1+','+jhand2+','+jhand3+','+jhand4+','+jhand5
+    jhand1 = player_1_cards_at_river[0]
+    jhand2 = player_1_cards_at_river[1]
+    jhand3 = player_1_cards_at_river[2]
+    jhand4 = player_1_cards_at_river[3]
+    jhand5 = player_1_cards_at_river[4]
+    jhand6 = player_1_cards_at_river[5]
+    jhand7 = player_1_cards_at_river[6]
+    jhand_flop = jhand1+','+jhand2+','+jhand3+','+jhand4+','+jhand5+','+jhand6+','+jhand7
 
     opp_bit_history = ','.join(player_2_bet_history)
 
@@ -608,31 +654,32 @@ while bomb < 2:
     # print('player 1 history {}'.format(p1))
     # print('player 2 history {}'.format(p2))
     if p1_cards_for_game > p2_cards_for_game:
-           print('player 1 wins {}'.format(p1[1]))
-           print('player 2 {}'.format(p2[0]))
+           # print('player 1 wins {}'.format(p1[1]))
+           # print('player 2 {}'.format(p2[0]))
            print(jhand_flop+','+opp_bit_history+','+did_win,file=outfile)
 
 
     elif p1_cards_for_game == p2_cards_for_game:
         if p1[1] > p2[1]:
             print(jhand_flop+','+opp_bit_history+','+did_win,file=outfile)
-            print('player 1 wins {}'.format(p1))
-            print('player 2 {}'.format(p2[0]))
+            # print('player 1 wins {}'.format(p1))
+            # print('player 2 {}'.format(p2[0]))
         elif p1[1] < p2[1]:
             print(jhand_flop+','+opp_bit_history+','+did_loss,file=outfile)
-            print('player 2 wins {}'.format(p2))
-            print('player 1 {}'.format(p1[0]))
+            # print('player 2 wins {}'.format(p2))
+            # print('player 1 {}'.format(p1[0]))
         else:
             1+1
-            print('draw')
+            # print('draw')
     else:
         print(jhand_flop+','+opp_bit_history+','+did_loss,file=outfile)
-        print('player 2 wins {}'.format(p2))
-        print('player 1 {}'.format(p1[0]))
+        # print('player 2 wins {}'.format(p2))
+        # print('player 1 {}'.format(p1[0]))
 
     # print('player 1 {}'.format(player_1_bet_history))
     # print('player 2 {}'.format(player_2_bet_history))
     # print(opp_bit_history)
 
     bomb += 1
+    print(bomb)
 outfile.close()
