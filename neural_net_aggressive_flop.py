@@ -115,6 +115,6 @@ def test_cards_agg_flop(card):
 
 
     if ps[0][0] > ps[0][1]:
-        return('call')
+        return('fold', ps)
     else:
-        return('raise')
+        return('raise',ps)

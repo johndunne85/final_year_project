@@ -115,6 +115,6 @@ def test_cards_tig_flop(card):
 
 
     if ps[0][0] > ps[0][1]:
-        return('call')
+        return('fold',ps)
     else:
-        return('raise')
+        return('raise',ps)

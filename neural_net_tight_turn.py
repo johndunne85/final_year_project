@@ -117,6 +117,6 @@ def test_cards_tig_turn(card):
 
 
     if ps[0][0] > ps[0][1]:
-        return('call')
+        return('call',ps)
     else:
-        return('raise')
+        return('raise',ps)
