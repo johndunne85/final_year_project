@@ -41,6 +41,7 @@ river_card = [0]
 button = 0
 #          0    1
 stacks = [5000, 5000]
+the_stack = 6000
 button_names = ['player_1','player_2']
 pot = 0
 small_blind = 2
@@ -51,20 +52,20 @@ player_1_bet_history = []
 player_2_bet_history = []
 game_record = [0,0]
 number_of_games_won = [0,0]
+bot = [0,0,0]  #aggressive_bot
+#bot = [3,4,3]   #tight_bot
 
 
 def decision_at_flop_player_1(p3):
 
     x = torch.FloatTensor([[card_table[p3[0]],card_table[p3[1]],card_table[p3[2]],card_table[p3[3]],card_table[p3[4]],\
-    bet_table[player_2_bet_history[0]],bet_table[player_2_bet_history[1]] if len(player_2_bet_history) == 2 else 1 ]])
+    bet_table[player_2_bet_history[0]],bet_table[player_2_bet_history[1]] if len(player_2_bet_history) == 2 else 1]])
     ans_agg, ans_agg_prob = test_cards_agg_flop(x)
     ans_tig, ans_tig_prob = test_cards_tig_flop(x)
     # print('--> agg flop {} {}'.format(ans_agg, ans_agg_prob))
     # print('--> tig flop {} {}'.format(ans_tig, ans_tig_prob))
-    # print(ans_agg_prob[0][0])
-    # print(ans_tig_prob[0][0])
 
-    if ans_agg_prob[0][0] > 0.60 and ans_tig_prob[0][0] > 0.60:
+    if (ans_agg_prob[0][0] > 0.60 and ans_tig_prob[0][0] > 0.60):
         return 'c'
     else:
         return 'r'
@@ -74,27 +75,27 @@ def decision_continue_at_flop_player_1(p3):
     bet_table[player_2_bet_history[0]],bet_table[player_2_bet_history[1]]]])
     ans_agg, ans_agg_prob_cf = test_cards_agg_flop(x)
     ans_tig, ans_tig_prob_cf = test_cards_tig_flop(x)
-    print('--> agg flop {} {}'.format(ans_agg, ans_agg_prob_cf))
-    print('--> tig flop {} {}'.format(ans_tig, ans_tig_prob_cf))
+    # print('--> agg flop folding {} {}'.format(ans_agg, ans_agg_prob_cf))
+    # print('--> tig flop folding {} {}'.format(ans_tig, ans_tig_prob_cf))
 
 
-    if ans_agg_prob_cf[0][0] > 0.60 and ans_tig_prob_cf[0][0] > 0.60:
+    if (ans_agg_prob_cf[0][0] > 0.60 and ans_tig_prob_cf[0][0] > 0.60):
         return 'f'
     else:
         return 'c'
 
 def decision_of_opponent_at_flop(hand_score):
 
-    if hand_score > 0:
+    if hand_score > bot[0]:  # changed
         return 'r'
     else:
         return 'c'
 
 def decision_continue_of_opponent_at_flop(hand_score):
-    if hand_score > 0:
+    if hand_score > bot[0]:
         return 'c'
     else:
-        return 'c'
+        return 'c' # changed
 
 def decision_at_turn_player_1(p4):
     x = torch.FloatTensor([[card_table[p4[0]],card_table[p4[1]],card_table[p4[2]],card_table[p4[3]],card_table[p4[4]],card_table[p4[5]],\
@@ -111,18 +112,18 @@ def decision_at_turn_player_1(p4):
 def decision_continue_at_turn_player_1(p4):
     x = torch.FloatTensor([[card_table[p4[0]],card_table[p4[1]],card_table[p4[2]],card_table[p4[3]],card_table[p4[4]],card_table[p4[5]],\
     bet_table[player_2_bet_history[0]],bet_table[player_2_bet_history[1]],bet_table[player_2_bet_history[2]] ]])
-    ans_agg_turn = test_cards_agg_turn(x)
-    ans_tig_turn = test_cards_tig_turn(x)
+    ans_agg_turn, ans_agg_prob_t = test_cards_agg_turn(x)
+    ans_tig_turn, ans_tig_prob_t = test_cards_tig_turn(x)
 
-    if ans_agg_turn == 'raise':
+    if ans_agg_prob_t[0][0] > 0.90 and ans_tig_prob_t[0][0] > 0.90:
         # print('p1 checks at turn ')
-        return 'c'
+        return 'f'
     else:
         return 'c'
 
 def decision_of_opponent_at_turn(hand_score):
 
-    if hand_score > 0:
+    if hand_score > bot[1]: # changed 0
         # player_2_bet_history.append('r')
         return 'r'
     else:
@@ -130,7 +131,7 @@ def decision_of_opponent_at_turn(hand_score):
         return 'c'
 
 def decision_continue_of_opponent_at_turn(hand_score):
-    if hand_score > 0:
+    if hand_score > bot[1]:
         # player_2_bet_history.append('r')
         # print('p2 checks at turn')
         return 'c'
@@ -164,7 +165,7 @@ def decision_continue_at_river_player_1(p5):
 
 def decision_of_opponent_at_river(hand_score):
 
-    if hand_score > 0:
+    if hand_score > bot[2]:
         # player_2_bet_history.append('r')
         return 'r'
     else:
@@ -173,12 +174,13 @@ def decision_of_opponent_at_river(hand_score):
 
 def decision_continue_of_opponent_at_river(hand_score):
 
-    if hand_score > 0:
+    if hand_score > bot[2]:
         # player_2_bet_history.append('r')
         return 'c'
     else:
         # player_2_bet_history.append('c')
         return 'c'
+
 
 def best_hand(cards):
             all_hands = list(itertools.permutations(cards , 5))
@@ -204,7 +206,7 @@ def find_winner(my_cards):
 
     if suits_count.most_common(1)[0][1] > 4: #rules out a royal flush, straight flush
         if 'A' in jset and 'K' in jset and 'Q' in jset and 'J' in jset and 'T' in jset:
-            return (9, 'royal_flush')
+            return (9, ['royal_flush',14])
         elif '6' in jset and '7' in jset and '8' in jset and '9' in jset and 'T' in jset:
             return (8, ['straight_flush',10])
         elif '7' in jset and '8' in jset and '9' in jset and 'T' in jset and 'J' in jset:
@@ -251,8 +253,9 @@ def find_winner(my_cards):
                 maxValue = max(maxValue, determine_value(c))
         return (0, ['high_card',maxValue])
 
+
 bomb = 0
-while bomb < 5000:
+while bomb < 10000:
 
     random.seed()
     random.shuffle(POKER_BOX)
@@ -503,8 +506,10 @@ while bomb < 5000:
             elif decision_continue_of_opponent_at_flop(opponent_hand_rank) == 'f':
                 player_2_bet_history.append('f')
                 bomb += 1
-                # print('player_2 folds')
+                print('player_2 folds at flop')
                 stacks[0] += pot
+                print(pot)
+                number_of_games_won[0] += 1
                 # print('player_1 wins ${}'.format(pot))
                 continue
 
@@ -728,6 +733,8 @@ while bomb < 5000:
     p1_cards_for_game, p1 = find_winner(player_1_cards_at_river)
     p2_cards_for_game, p2 = find_winner(player_2_cards_at_river)
 
+    print('Player_1 cards : {}'.format(jhand_flop))
+
     # print('player 1 history {}'.format(p1))
     # print('player 2 history {}'.format(p2))
     if p1_cards_for_game > p2_cards_for_game:
@@ -735,6 +742,7 @@ while bomb < 5000:
            # print('player 2 {}'.format(p2[0]))
            game_record[0] += 1
            stacks[0] += pot
+           # print(pot)
            number_of_games_won[0] += 1
            # print(jhand_flop+','+opp_bit_history+','+did_win,file=outfile)
 
@@ -742,6 +750,7 @@ while bomb < 5000:
     elif p1_cards_for_game == p2_cards_for_game:
         if p1[1] > p2[1]:
             stacks[0] += pot
+            # print(pot)
             pot = 0
             number_of_games_won[0] += 1
             # print(jhand_flop+','+opp_bit_history+','+did_win,file=outfile)
@@ -750,6 +759,7 @@ while bomb < 5000:
             game_record[0] +=1
         elif p1[1] < p2[1]:
             stacks[1] += pot
+            # print(pot)
             pot = 0
             number_of_games_won[1] += 1
             # print(jhand_flop+','+opp_bit_history+','+did_loss,file=outfile)
@@ -760,11 +770,13 @@ while bomb < 5000:
             stack_size = pot
             stacks[0] += stack_size/2
             stacks[1] += stack_size/2
+            # print(pot)
             pot = 0
             # print('draw')
     else:
         game_record[1] +=1
         stacks[1] += pot
+        # print(pot)
         pot = 0
         number_of_games_won[1] += 1
         # print(jhand_flop+','+opp_bit_history+','+did_loss,file=outfile)
@@ -772,12 +784,13 @@ while bomb < 5000:
         # print('player 1 {}'.format(p1[0]))
 
 
-    print('player 1 {}'.format(player_1_bet_history))
-    print('player 2 {}'.format(player_2_bet_history))
-    print(game_record)
-    print('Player 1 hand {}.Player 2 hand {}'.format(p1,p2))
+    print('player 1 betting history: {}'.format(player_1_bet_history))
+    print('player 2 betting history:{}'.format(player_2_bet_history))
+    print('Who won this game p1, p2 {}'.format(game_record))
+    print('Player 1 hand {}\nPlayer 2 hand {}'.format(p1,p2))
 
     bomb += 1
     button = (button + 1)%2
-print('DeepLearning won £{} ,aggressive bot won £{}'.format(stacks[0],stacks[1]))
-print(number_of_games_won)
+print()
+print('DeepLearning won £{} ,Aggressive bot won £{}'.format(stacks[0],stacks[1]))
+print('Number of games won p1, p2 : {}'.format(number_of_games_won))

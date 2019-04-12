@@ -113,7 +113,7 @@ def test_cards_agg_flop(card):
 
     ps = F.softmax(logits,dim=1)
 
-
+    print('Probability from neural network at flop -> {}'.format(ps))
     if ps[0][0] > ps[0][1]:
         return('fold', ps)
     else:
